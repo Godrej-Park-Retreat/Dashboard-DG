@@ -252,13 +252,13 @@ function monthRunningTotals(data, readings){
 function renderRunningSummary(data,readings){
   const x=monthRunningTotals(data,readings);
   // Build per-DG running hours display for each yard as comma-separated list
-  const formatDgList = (ids) => ids.map(id => `${id}: ${fmt(x.byDG[id]||0,2)} h`).join(', ');
+  const formatDgList = (ids) => ids.map(id => `${id}: <strong>${fmt(x.byDG[id]||0,2)} h</strong>`).join(', ');
   const yard1Dgs = formatDgList(x.yard1List);
   const yard2Dgs = formatDgList(x.yard2List);
   document.querySelector("#runningSummary").innerHTML=`
     <div class="summary-row yard1"><div><div class="yard-name">Yard 1</div><small>${yard1Dgs}</small></div><div class="summary-value"><span>Total Hours</span><strong>${fmt(x.yard1,2)} h</strong></div></div>
     <div class="summary-row yard2"><div><div class="yard-name">Yard 2</div><small>${yard2Dgs}</small></div><div class="summary-value"><span>Total Hours</span><strong>${fmt(x.yard2,2)} h</strong></div></div>
-    <div class="overall-row"><strong>Overall Total</strong><span class="overall-value">${fmt(x.total,2)} h</span></div>`;
+    <div class="overall-row"><strong>Total Running Hours</strong><span class="overall-value">${fmt(x.total,2)} h</span></div>`;
 }
 
 function dailyConsumption(readings,date,allowedDGs){
@@ -277,16 +277,85 @@ function dailyConsumption(readings,date,allowedDGs){
   return {fuel,hours,lph:hours?fuel/hours:null};
 }
 function renderConsumptionSummary(data,readings){
-  const date=[...new Set(readings.map(r=>r.date))].sort().at(-1);
-  const yard1=(data.config?.dgs||[]).filter(d=>d.yard==="Yard 1").map(d=>d.id);
-  const yard2=(data.config?.dgs||[]).filter(d=>d.yard==="Yard 2").map(d=>d.id);
-  const c1=dailyConsumption(readings,date,yard1), c2=dailyConsumption(readings,date,yard2);
-  const text=c=>c.lph==null?"—":`${fmt(c.fuel)} L`;
-  const label=c=>c.lph==null?"No running-hour delta":"Total Consumed";
-  document.querySelector("#consumptionSummary").innerHTML=`
-    <div class="summary-row yard1"><div><div class="yard-name">Yard 1</div><small>DG1, DG2, DG3</small></div><div class="summary-value"><span>${label(c1)}</span><strong>${text(c1)}</strong></div></div>
-    <div class="summary-row yard2"><div><div class="yard-name">Yard 2</div><small>DG4, DG5, DG6</small></div><div class="summary-value"><span>${label(c2)}</span><strong>${text(c2)}</strong></div></div>
-    <div class="overall-row"><strong>Latest day</strong><span class="overall-value">${formatDate(date)}</span></div>`;
+  // readings are already filtered to the selected month by render()
+  const dates=[...new Set(readings.map(r=>r.date))].sort();
+  const latestDate=dates.at(-1);
+  const cfg=data.config?.dgs||[];
+  const yard1Ids=cfg.filter(d=>d.yard==="Yard 1").map(d=>d.id);
+  const yard2Ids=cfg.filter(d=>d.yard==="Yard 2").map(d=>d.id);
+
+  const monthTotals = (ids) => {
+    let totalConsumed = 0;
+    let totalAdded = 0;
+    let computed = false;
+    ids.forEach(id=>{
+      const rs = readings.filter(r=>r.dg===id).sort((a,b)=>a.date.localeCompare(b.date));
+      const added = rs.reduce((s,r)=>s + (Number(r.fuelAdded)||0), 0);
+      totalAdded += added;
+      if(rs.length>=2){
+        const first = rs[0];
+        const last = rs.at(-1);
+        const consumed = (Number(first.fuelActual)||0) + added - (Number(last.fuelActual)||0);
+        if(Number.isFinite(consumed)){
+          totalConsumed += Math.max(0,consumed);
+          computed = true;
+        }
+      }
+    });
+    return { totalConsumed, totalAdded, computed };
+  };
+
+  const y1 = monthTotals(yard1Ids);
+  const y2 = monthTotals(yard2Ids);
+
+  const formatValue = (t) => `${fmt(t)} L`;
+  const renderBlock = (yardName, ids, totals) => {
+    let label, value;
+    if(totals.computed){ label = 'Total Consumed'; value = formatValue(totals.totalConsumed); }
+    else if(totals.totalAdded>0){ label = 'Total Added'; value = formatValue(totals.totalAdded); }
+    else { label = 'No running-hour delta'; value = '—'; }
+    const dgList = ids.join(', ');
+    return `<div class="summary-row ${yardName==='Yard 1'?'yard1':'yard2'}"><div><div class="yard-name">${yardName}</div><small>${dgList}</small></div><div class="summary-value"><span>${label}</span><strong>${value}</strong></div></div>`;
+  };
+
+  // Build per-DG lists for ALL DGs in a yard, always showing a numeric value (consumed if computable,
+  // otherwise total added, otherwise 0 L).
+  const perDgDisplay = (ids) => ids.map(id => {
+    const rs = readings.filter(r=>r.dg===id).sort((a,b)=>a.date.localeCompare(b.date));
+    const added = rs.reduce((s,r)=>s + (Number(r.fuelAdded)||0), 0);
+    let consumed = null;
+    if(rs.length>=2){
+      const first = rs[0];
+      const last = rs.at(-1);
+      const c = (Number(first.fuelActual)||0) + added - (Number(last.fuelActual)||0);
+      if(Number.isFinite(c)) consumed = Math.max(0, Math.round(c)); // never show negative consumption
+    }
+    const vNum = consumed!=null ? consumed : (added? Math.round(added) : 0);
+    const v = `<strong>${fmt(vNum)} L</strong>`;
+    return `${id}: ${v}`;
+  }).join(', ');
+
+  const yard1DgShort = perDgDisplay(yard1Ids);
+  const yard2DgShort = perDgDisplay(yard2Ids);
+
+  // Render blocks but inject DG short lists into the small text for each yard
+  const renderBlockWithDgs = (yardName, ids, totals, shortText) => {
+    let label, value;
+    if(totals.computed){ label = 'Total Consumed'; value = formatValue(totals.totalConsumed); }
+    else if(totals.totalAdded>0){ label = 'Total Added'; value = formatValue(totals.totalAdded); }
+    else { label = 'No running-hour delta'; value = '—'; }
+    const smallText = shortText || ids.join(', ');
+    return `<div class="summary-row ${yardName==='Yard 1'?'yard1':'yard2'}"><div><div class="yard-name">${yardName}</div><small>${smallText}</small></div><div class="summary-value"><span>${label}</span><strong>${value}</strong></div></div>`;
+  };
+
+  const overallTotal = (y1.totalConsumed!==undefined && y2.totalConsumed!==undefined && (y1.computed || y2.computed))
+    ? ( (y1.totalConsumed||0) + (y2.totalConsumed||0) )
+    : ( (y1.totalAdded||0) + (y2.totalAdded||0) );
+
+  document.querySelector("#consumptionSummary").innerHTML = `
+    ${renderBlockWithDgs('Yard 1', yard1Ids, y1, yard1DgShort)}
+    ${renderBlockWithDgs('Yard 2', yard2Ids, y2, yard2DgShort)}
+    <div class="overall-row"><strong>Total Fuel consumption</strong><span class="overall-value">${formatValue(overallTotal)}</span></div>`;
 }
 
 function renderComparison(readings){
