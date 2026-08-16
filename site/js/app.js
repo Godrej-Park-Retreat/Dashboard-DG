@@ -237,20 +237,27 @@ function deltaHours(a,b){
   return Math.max(0,Number(b.runningHours)-Number(a.runningHours));
 }
 function monthRunningTotals(data, readings){
-  const cfg=data.config?.dgs||[]; const byDG={};
+  const cfg=data.config?.dgs||[];
+  const byDG={};
   cfg.forEach(d=>{
     const rs=readings.filter(r=>r.dg===d.id && Number.isFinite(Number(r.runningHours))).sort((a,b)=>a.date.localeCompare(b.date));
     byDG[d.id]=rs.length>1?Math.max(0,Number(rs.at(-1).runningHours)-Number(rs[0].runningHours)):0;
   });
-  const yard1=cfg.filter(d=>d.yard==="Yard 1").reduce((s,d)=>s+byDG[d.id],0);
-  const yard2=cfg.filter(d=>d.yard==="Yard 2").reduce((s,d)=>s+byDG[d.id],0);
-  return {yard1,yard2,total:yard1+yard2};
+  const yard1List = cfg.filter(d=>d.yard==="Yard 1").map(d=>d.id);
+  const yard2List = cfg.filter(d=>d.yard==="Yard 2").map(d=>d.id);
+  const yard1 = yard1List.reduce((s,id)=>s + (Number.isFinite(Number(byDG[id]))?Number(byDG[id]):0),0);
+  const yard2 = yard2List.reduce((s,id)=>s + (Number.isFinite(Number(byDG[id]))?Number(byDG[id]):0),0);
+  return { byDG, yard1List, yard2List, yard1, yard2, total: yard1+yard2 };
 }
 function renderRunningSummary(data,readings){
   const x=monthRunningTotals(data,readings);
+  // Build per-DG running hours display for each yard as comma-separated list
+  const formatDgList = (ids) => ids.map(id => `${id}: ${fmt(x.byDG[id]||0,2)} h`).join(', ');
+  const yard1Dgs = formatDgList(x.yard1List);
+  const yard2Dgs = formatDgList(x.yard2List);
   document.querySelector("#runningSummary").innerHTML=`
-    <div class="summary-row yard1"><div><div class="yard-name">Yard 1</div><small>DG1, DG2, DG3</small></div><div class="summary-value"><span>Total Hours</span><strong>${fmt(x.yard1,2)} h</strong></div></div>
-    <div class="summary-row yard2"><div><div class="yard-name">Yard 2</div><small>DG4, DG5, DG6</small></div><div class="summary-value"><span>Total Hours</span><strong>${fmt(x.yard2,2)} h</strong></div></div>
+    <div class="summary-row yard1"><div><div class="yard-name">Yard 1</div><small>${yard1Dgs}</small></div><div class="summary-value"><span>Total Hours</span><strong>${fmt(x.yard1,2)} h</strong></div></div>
+    <div class="summary-row yard2"><div><div class="yard-name">Yard 2</div><small>${yard2Dgs}</small></div><div class="summary-value"><span>Total Hours</span><strong>${fmt(x.yard2,2)} h</strong></div></div>
     <div class="overall-row"><strong>Overall Total</strong><span class="overall-value">${fmt(x.total,2)} h</span></div>`;
 }
 
