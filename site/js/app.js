@@ -383,12 +383,65 @@ function renderConsumptionSummary(data,readings){
 function renderComparison(readings){
   const dates=[...new Set(readings.map(r=>r.date))].sort(); const current=dates.at(-1), previous=dates.at(-2);
   document.querySelector("#comparisonDates").textContent=previous&&current?`${formatDate(previous)} → ${formatDate(current)}`:"Only one reading is available.";
-  const ids=["DG1","DG2","DG3","DG4","DG5","DG6"];
+  const yard1 = ["DG1","DG2","DG3"];
+  const yard2 = ["DG4","DG5","DG6"];
   const by=(date,id)=>readings.find(r=>r.date===date&&r.dg===id);
-  document.querySelector("#comparison").innerHTML=ids.map(id=>{
-    const a=by(previous,id),b=by(current,id),av=Number(a?.fuelPercent),bv=Number(b?.fuelPercent),d=bv-av,cls=d>0?"up":d<0?"down":"flat";
-    return `<article class="compare-card"><strong>${id}</strong><div class="compare-row"><div><small>${formatDate(previous)}</small><div class="compare-value">${pct(av)}</div></div><div><small>${formatDate(current)}</small><div class="compare-value">${pct(bv)}</div></div></div><div class="delta ${cls}">${Number.isFinite(d)?`${d>0?"+":""}${d.toFixed(1)} percentage points`:"—"}</div></article>`;
-  }).join("");
+
+  const renderRow = (id)=>{
+    const a=by(previous,id)||{}; const b=by(current,id)||{};
+    const av=Number.isFinite(Number(a.fuelPercent))?Number(a.fuelPercent):null;
+    const bv=Number.isFinite(Number(b.fuelPercent))?Number(b.fuelPercent):null;
+    const delta = (bv!=null && av!=null) ? (bv - av) : null;
+    const cls = delta>0?"up":(delta<0?"down":"flat");
+    return `
+      <div class="dg-row">
+        <div class="dg-name">${id}</div>
+        <div class="dg-bars">
+          <div class="bar-row"><div class="bar-label"><small>${formatDate(previous)}</small></div><div class="bar-track"><div class="bar-fill" style="width:${av!=null?av:0}%"></div></div><div class="bar-value">${av!=null?pct(av):'—'}</div></div>
+          <div class="bar-row"><div class="bar-label"><small>${formatDate(current)}</small></div><div class="bar-track"><div class="bar-fill secondary" style="width:${bv!=null?bv:0}%"></div></div><div class="bar-value">${bv!=null?pct(bv):'—'}</div></div>
+        </div>
+        <div class="change-indicator ${delta>0? 'up': delta<0? 'down': 'flat'}">${delta!=null? (delta>0?`↑ ${Math.abs(delta).toFixed(0)}%`:(delta<0?`↓ ${Math.abs(delta).toFixed(0)}%`:`— 0%`)) : '—'}</div>
+      </div>`;
+  };
+
+  document.querySelector('#yard1List').innerHTML = yard1.map(renderRow).join('');
+  document.querySelector('#yard2List').innerHTML = yard2.map(renderRow).join('');
+
+  // Summary counts
+  const allIds = [...yard1,...yard2];
+  let inc=0, dec=0, flat=0;
+  allIds.forEach(id=>{
+    const a=by(previous,id)||{}; const b=by(current,id)||{};
+    const av=Number.isFinite(Number(a.fuelPercent))?Number(a.fuelPercent):null;
+    const bv=Number.isFinite(Number(b.fuelPercent))?Number(b.fuelPercent):null;
+    if(av!=null && bv!=null){ if(bv>av) inc++; else if(bv<av) dec++; else flat++; }
+  });
+  document.querySelector('#sumIncreased').textContent = inc;
+  document.querySelector('#sumDecreased').textContent = dec;
+  document.querySelector('#sumFlat').textContent = flat;
+
+  // Per-yard meta counts (populate yard header pills)
+  const metaHtml = (inc, dec, flat) =>
+    `<span class="meta-pill green"><span class="meta-icon">↑</span><span class="meta-text">${inc}</span></span>`+
+    `<span class="meta-pill red"><span class="meta-icon">↓</span><span class="meta-text">${dec}</span></span>`+
+    `<span class="meta-pill"><span class="meta-icon">—</span><span class="meta-text">${flat}</span></span>`;
+
+  let y1inc=0,y1dec=0,y1flat=0;
+  yard1.forEach(id=>{
+    const a=by(previous,id)||{}; const b=by(current,id)||{};
+    const av=Number.isFinite(Number(a.fuelPercent))?Number(a.fuelPercent):null;
+    const bv=Number.isFinite(Number(b.fuelPercent))?Number(b.fuelPercent):null;
+    if(av!=null && bv!=null){ if(bv>av) y1inc++; else if(bv<av) y1dec++; else y1flat++; }
+  });
+  let y2inc=0,y2dec=0,y2flat=0;
+  yard2.forEach(id=>{
+    const a=by(previous,id)||{}; const b=by(current,id)||{};
+    const av=Number.isFinite(Number(a.fuelPercent))?Number(a.fuelPercent):null;
+    const bv=Number.isFinite(Number(b.fuelPercent))?Number(b.fuelPercent):null;
+    if(av!=null && bv!=null){ if(bv>av) y2inc++; else if(bv<av) y2dec++; else y2flat++; }
+  });
+  const y1meta = document.getElementById('yard1Meta'); if(y1meta) y1meta.innerHTML = metaHtml(y1inc,y1dec,y1flat);
+  const y2meta = document.getElementById('yard2Meta'); if(y2meta) y2meta.innerHTML = metaHtml(y2inc,y2dec,y2flat);
 }
 
 function renderFuelAdditions(readings){

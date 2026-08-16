@@ -393,6 +393,90 @@ h2 {
     gap: 10px
 }
 
+/* New comparison section layout */
+.comparison-section {
+    padding: 12px;
+    background: #fbfcfe;
+    border: 1px solid #e3e8ef;
+    border-radius: 10px;
+}
+
+.comparison-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.comparison-title {
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.comparison-summaries {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.summary-badge {
+    background: #fff;
+    border: 1px solid #e6eef8;
+    border-radius: 10px;
+    padding: 8px 12px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    min-width: 64px;
+}
+
+.summary-badge strong { font-size: 18px; color: #101828 }
+.summary-badge small { color: #667085; display: block; font-size: 11px }
+.summary-badge.increased { border-color: #dff3e9 }
+.summary-badge.increased strong { color: #027a48 }
+.summary-badge.decreased { border-color: #fdecea }
+.summary-badge.decreased strong { color: #b42318 }
+.summary-badge.flat { border-color: #eef2f6 }
+
+.yards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+}
+
+.yard { background: #fff; border: 1px solid #eef2f7; border-radius: 10px; padding: 12px }
+.yard-header { display:flex; justify-content: space-between; align-items: center; margin-bottom: 10px }
+.yard-title { font-weight: 800; font-size: 16px }
+.yard-title small { font-weight: 600; color: #667085; margin-left: 6px }
+.yard-meta { display:flex; gap:8px }
+.meta-pill { background: #f6f8fb; padding: 6px 8px; border-radius: 12px; font-size: 12px; color:#475467; display:inline-flex;align-items:center;gap:8px }
+.meta-pill .meta-icon{width:18px;height:18px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:12px}
+.meta-pill.green { background:#effaf1; color:#027a48 }
+.meta-pill.green .meta-icon{background:#e7fbef;color:#027a48;border:1px solid #dff3e9}
+.meta-pill.red { background:#fff1f1; color:#b42318 }
+.meta-pill.red .meta-icon{background:#fff2f2;color:#b42318;border:1px solid #fde6e6}
+.meta-pill .meta-text{font-weight:700}
+
+.dg-list { display:flex; flex-direction: column; gap: 14px }
+.dg-row { display:flex; align-items: center; gap:12px; padding: 8px 0; border-top: 1px solid #f1f5f9 }
+.dg-row:first-child { border-top: none }
+.dg-name { width: 70px; font-weight: 800 }
+.dg-bars { flex: 1 }
+.bar-row { display:flex; align-items:center; gap:10px; margin:4px 0 }
+.bar-label { width: 82px; font-size: 13px; color:#475467 }
+.bar-track { background:#eef4fb; height: 12px; border-radius: 8px; flex:1; position:relative }
+.bar-fill { height: 100%; background: #2d78e8; border-radius: 8px }
+.bar-fill.secondary { background:#3f8adf }
+.bar-value { width: 46px; text-align:right; font-weight:800 }
+.change-indicator { width: 64px; text-align: right; font-weight:800 }
+.change-indicator.up { color:#027a48 }
+.change-indicator.down { color:#b42318 }
+.change-indicator.flat { color:#667085 }
+
+@media(max-width:1100px) {
+    .yards { grid-template-columns: 1fr }
+}
+
 .compare-card {
     background: #fbfcfe;
     border: 1px solid #e3e8ef;

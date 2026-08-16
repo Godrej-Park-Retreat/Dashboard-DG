@@ -78,8 +78,33 @@
             <h2>Previous vs Current Reading</h2>
             <p id="comparisonDates" class="muted"></p>
           </div>
+          <div class="comparison-top">
+            <div class="comparison-summaries">
+              <div class="summary-badge increased"><span class="arrow">↑</span><strong id="sumIncreased">0</strong><small>DGs</small></div>
+              <div class="summary-badge decreased"><span class="arrow">↓</span><strong id="sumDecreased">0</strong><small>DG</small></div>
+              <div class="summary-badge flat"><span class="dash">—</span><strong id="sumFlat">0</strong><small>DG</small></div>
+            </div>
+          </div>
         </div>
-        <div id="comparison" class="comparison-grid"></div>
+        <div id="comparison">
+          <div class="yards">
+            <div class="yard" id="yard1">
+              <div class="yard-header">
+                <div class="yard-title"><span class="yard-name yard1">Yard 1</span> <small>(DG1 - DG3)</small></div>
+                <div class="yard-meta" id="yard1Meta"></div>
+              </div>
+              <div class="dg-list" id="yard1List"></div>
+            </div>
+
+            <div class="yard" id="yard2">
+              <div class="yard-header">
+                <div class="yard-title"><span class="yard-name yard2">Yard 2</span> <small>(DG4 - DG6)</small></div>
+                <div class="yard-meta" id="yard2Meta"></div>
+              </div>
+              <div class="dg-list" id="yard2List"></div>
+            </div>
+          </div>
+        </div>
       </section>
 
       <section class="panel secondary-panel">
