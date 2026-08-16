@@ -32,7 +32,15 @@ async function loadData(){
   return await res.json();
 }
 
-function validReadings(data){ return (data.readings||[]).filter(validReading); }
+function validReadings(data){
+  const all=(data.readings||[]).filter(validReading);
+  // If data.generatedAt exists, ignore any reading dated after the generatedAt date
+  // (some exports may contain future worksheet placeholders). generatedAt may include
+  // time; compare only the date portion (YYYY-MM-DD).
+  const genDate = data?.generatedAt ? String(data.generatedAt).slice(0,10) : null;
+  if(!genDate) return all;
+  return all.filter(r => String(r.date) <= genDate);
+}
 function readingsForMonth(data,month){ return validReadings(data).filter(r=>String(r.date).slice(0,7)===month); }
 function latestByDG(readings){
   const map={};
@@ -139,6 +147,18 @@ function renderFuelLevel(data, readings){
   el.innerHTML=svg;
 }
 
+// Render the legend text using configured thresholds (global defaults in data.config)
+function renderLegend(data){
+  const el=document.querySelector('.legend'); if(!el) return;
+  const warn = Number(data.config?.dgsWarningPercent ?? data.config?.warningPercent ?? 30);
+  const crit = Number(data.config?.dgsCriticalPercent ?? data.config?.criticalPercent ?? 20);
+  el.innerHTML = `
+    <span><i class="dot normal"></i>&gt; ${warn}% (Normal)</span>
+    <span><i class="dot warning"></i>${crit}% - ${warn}% (Warning)</span>
+    <span><i class="dot critical"></i>&lt; ${crit}% (Critical)</span>
+  `;
+}
+
 function renderExternalTanks(data){
   const tanks=data.config?.externalTanks||[];
   const el=document.querySelector("#externalTanks");
@@ -225,11 +245,13 @@ function renderExternalTanks(data){
     else if(st==="warning") warning++;
     else critical++;
   });
+  const warnLabel = defaultDgWarning2;
+  const critLabel = defaultDgCritical2;
   document.querySelector("#overviewCards").innerHTML=`
     <div class="overview-card"><div class="summary-icon blue">⛽</div><div><div class="overview-number">${cfg.length}</div><div class="overview-label">DG Sets</div><div class="overview-label">2 Yards</div></div></div>
-    <div class="overview-card"><div class="summary-icon green">▰</div><div><div class="overview-number">${normal}</div><div class="overview-label">DGs &gt; 30%</div><div class="overview-state normal">Normal</div></div></div>
-    <div class="overview-card"><div class="summary-icon yellow">!</div><div><div class="overview-number">${warning}</div><div class="overview-label">DGs 20% - 30%</div><div class="overview-state warning">Warning</div></div></div>
-    <div class="overview-card"><div class="summary-icon red">!</div><div><div class="overview-number">${critical}</div><div class="overview-label">DGs &lt; 20%</div><div class="overview-state critical">Critical</div></div></div>`;
+    <div class="overview-card"><div class="summary-icon green">▰</div><div><div class="overview-number">${normal}</div><div class="overview-label">DGs &gt; ${warnLabel}%</div><div class="overview-state normal">Normal</div></div></div>
+    <div class="overview-card"><div class="summary-icon yellow">!</div><div><div class="overview-number">${warning}</div><div class="overview-label">DGs ${critLabel}% - ${warnLabel}%</div><div class="overview-state warning">Warning</div></div></div>
+    <div class="overview-card"><div class="summary-icon red">!</div><div><div class="overview-number">${critical}</div><div class="overview-label">DGs &lt; ${critLabel}%</div><div class="overview-state critical">Critical</div></div></div>`;
 }
 
 function deltaHours(a,b){
@@ -393,6 +415,7 @@ function render(){
   document.querySelector("#dashboard").hidden=!has; document.querySelector("#emptyState").hidden=has;
   if(!has)return;
   renderFuelLevel(state.data,readings);
+  renderLegend(state.data);
   renderExternalTanks(state.data);
   renderOverview(state.data,readings);
   renderRunningSummary(state.data,readings);

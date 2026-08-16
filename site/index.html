@@ -14,9 +14,9 @@
       <div class="eyebrow">GODREJ PARK RETREAT</div>
       <h1>DG Monitoring system</h1>
       <div class="sync-line">
-        <span>◷</span><span id="syncTime">Data synced: —</span>
+        <span id="syncTime">Data synced: -</span>
         <span class="separator">|</span>
-        <span>◷</span><span id="dataTill">Data available till: —</span>
+        <span id="dataTill">Data available till: -</span>
       </div>
     </div>
     <div class="toolbar">
@@ -24,7 +24,7 @@
         <span>Month</span>
         <select id="monthSelect" aria-label="Dashboard month"></select>
       </label>
-      <button id="refreshBtn" class="refresh-btn" type="button">↻ &nbsp;Refresh</button>
+      <button id="refreshBtn" class="refresh-btn" type="button">&nbsp;Refresh</button>
     </div>
   </header>
 
@@ -43,9 +43,7 @@
             <div class="subcard-title"><span class="signal-mini" aria-hidden="true"><i></i><i></i><i></i><i></i></span>DG Fuel Level</div>
             <div id="fuelLevelChart" class="fuel-chart"></div>
             <div class="legend">
-              <span><i class="dot normal"></i>&gt; 30% (Normal)</span>
-              <span><i class="dot warning"></i>20% - 30% (Warning)</span>
-              <span><i class="dot critical"></i>&lt; 20% (Critical)</span>
+              <!-- Legend populated dynamically from configuration -->
             </div>
           </div>
           <div class="fuel-subcard external-subcard">
@@ -64,12 +62,12 @@
         </article>
 
         <article class="panel summary-panel">
-          <h2><span class="title-icon blue"></span> Running Hours (Total)</h2>
+          <h2><span class="title-icon blue"></span> Total Running Hours</h2>
           <div id="runningSummary"></div>
         </article>
 
         <article class="panel summary-panel">
-          <h2><span class="title-icon purple"></span> Fuel Consumption Total</h2>
+          <h2><span class="title-icon purple"></span> Total Fuel Consumption</h2>
           <div id="consumptionSummary"></div>
         </article>
       </section>

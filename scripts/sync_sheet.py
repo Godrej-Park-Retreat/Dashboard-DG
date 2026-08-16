@@ -130,6 +130,9 @@ def parse_sheet(raw,sheet):
         metric_by_col.append(found)
 
     readings=[]
+    # Keep last seen values per DG to allow duplicate-detection when needed
+    prev_values_per_dg = {dg: None for dg in DG_IDS}
+    DEBUG = os.getenv("SYNC_DEBUG")
     for r in range(max(dg_header_row,metric_header_row)+1,raw_df.shape[0]):
         day=numeric(raw_df.iat[r,0])
         if day is None or not (1<=day<=31):
@@ -155,8 +158,14 @@ def parse_sheet(raw,sheet):
                 if metric:
                     values[metric]=numeric(raw_df.iat[r,c])
 
-            # Blank future rows commonly contain formula-generated 0 in
-            # Diesel Balance Actuals. Treat those as blank, not a reading.
+            # Ensure fuel added is numeric 0 when cell is blank (numeric may
+            # return None and override the default 0). Treat None as 0.
+            if values.get("fuel added") is None:
+                values["fuel added"] = 0
+
+            # Blank future rows commonly contain formula-generated values.
+            # Treat rows that are identical to the previous non-empty row for
+            # the same DG (and with zero fuel added) as non-real copied rows.
             has_real_reading=(
                 values["running hours"] is not None
                 or values["diesel balance %"] is not None
@@ -168,7 +177,11 @@ def parse_sheet(raw,sheet):
             )
 
             if not has_real_reading:
+                if DEBUG:
+                    print(f"[{sheet}] row {r} day {dt} dg {dg} skipped: has_real_reading={has_real_reading} values={values}")
                 continue
+            if DEBUG:
+                print(f"[{sheet}] row {r} day {dt} dg {dg} accepted: values={values}")
 
             readings.append({
                 "date":dt,
