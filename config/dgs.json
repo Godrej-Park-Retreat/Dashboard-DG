@@ -1,52 +1,44 @@
 {
+  "dgsWarningPercent": 35,
+  "dgsCriticalPercent": 25,
+  "externalWarningPercent": 30,
+  "externalCriticalPercent": 15,
   "dgs": [
     {
       "id": "DG1",
       "yard": "Yard 1",
       "towers": "A-E",
-      "capacityLiters": 1000,
-      "warningPercent": 30,
-      "criticalPercent": 20
+      "capacityLiters": 1000
     },
     {
       "id": "DG2",
       "yard": "Yard 1",
       "towers": "A-E",
-      "capacityLiters": 1000,
-      "warningPercent": 30,
-      "criticalPercent": 20
+      "capacityLiters": 1000
     },
     {
       "id": "DG3",
       "yard": "Yard 1",
       "towers": "A-E",
-      "capacityLiters": 500,
-      "warningPercent": 30,
-      "criticalPercent": 20
+      "capacityLiters": 500
     },
     {
       "id": "DG4",
       "yard": "Yard 2",
       "towers": "F-H",
-      "capacityLiters": 1000,
-      "warningPercent": 30,
-      "criticalPercent": 20
+      "capacityLiters": 1000
     },
     {
       "id": "DG5",
       "yard": "Yard 2",
       "towers": "F-H",
-      "capacityLiters": 1000,
-      "warningPercent": 30,
-      "criticalPercent": 20
+      "capacityLiters": 1000
     },
     {
       "id": "DG6",
       "yard": "Yard 2",
       "towers": "F-H",
-      "capacityLiters": 800,
-      "warningPercent": 30,
-      "criticalPercent": 20
+      "capacityLiters": 800
     }
   ],
   "externalTanks": [

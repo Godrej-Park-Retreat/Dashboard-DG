@@ -75,9 +75,16 @@ function renderFuelLevel(data, readings){
   const slotW=(plotRight-plotLeft)/cfg.length;
   const tankW=104;
   const y=v=>plotBottom-(v/maxCapacity)*plotH;
+  // Global defaults for DG warning/critical thresholds. Per-DG values (if present)
+  // will override these defaults.
+  const defaultDgWarning = Number(data.config?.dgsWarningPercent ?? data.config?.warningPercent ?? 30);
+  const defaultDgCritical = Number(data.config?.dgsCriticalPercent ?? data.config?.criticalPercent ?? 20);
+
   const statusColor=d=>{
     const p=Number(latest[d.id]?.fuelPercent);
-    const st=levelState(p,d.warningPercent,d.criticalPercent);
+    const warn = Number.isFinite(Number(d.warningPercent)) ? Number(d.warningPercent) : defaultDgWarning;
+    const crit = Number.isFinite(Number(d.criticalPercent)) ? Number(d.criticalPercent) : defaultDgCritical;
+    const st=levelState(p, warn, crit);
     return st==="critical"?"#ef3340":st==="warning"?"#f5a400":"#2d78e8";
   };
 
@@ -206,7 +213,18 @@ function renderExternalTanks(data){
 }function renderOverview(data, readings){
   const cfg=data.config?.dgs||[]; const latest=latestByDG(readings);
   let normal=0,warning=0,critical=0;
-  cfg.forEach(d=>{const st=levelState(Number(latest[d.id]?.fuelPercent),d.warningPercent,d.criticalPercent); if(st==="normal")normal++; else if(st==="warning")warning++; else critical++;});
+  // Use global defaults for counting overview states; per-DG values override.
+  const defaultDgWarning2 = Number(data.config?.dgsWarningPercent ?? data.config?.warningPercent ?? 30);
+  const defaultDgCritical2 = Number(data.config?.dgsCriticalPercent ?? data.config?.criticalPercent ?? 20);
+  cfg.forEach(d=>{
+    const p = Number(latest[d.id]?.fuelPercent);
+    const warn = Number.isFinite(Number(d.warningPercent)) ? Number(d.warningPercent) : defaultDgWarning2;
+    const crit = Number.isFinite(Number(d.criticalPercent)) ? Number(d.criticalPercent) : defaultDgCritical2;
+    const st=levelState(p, warn, crit);
+    if(st==="normal") normal++;
+    else if(st==="warning") warning++;
+    else critical++;
+  });
   document.querySelector("#overviewCards").innerHTML=`
     <div class="overview-card"><div class="summary-icon blue">⛽</div><div><div class="overview-number">${cfg.length}</div><div class="overview-label">DG Sets</div><div class="overview-label">2 Yards</div></div></div>
     <div class="overview-card"><div class="summary-icon green">▰</div><div><div class="overview-number">${normal}</div><div class="overview-label">DGs &gt; 30%</div><div class="overview-state normal">Normal</div></div></div>
