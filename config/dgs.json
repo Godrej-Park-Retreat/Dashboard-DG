@@ -1,0 +1,70 @@
+{
+  "dgs": [
+    {
+      "id": "DG1",
+      "yard": "Yard 1",
+      "towers": "A-E",
+      "capacityLiters": 1000,
+      "warningPercent": 30,
+      "criticalPercent": 20
+    },
+    {
+      "id": "DG2",
+      "yard": "Yard 1",
+      "towers": "A-E",
+      "capacityLiters": 1000,
+      "warningPercent": 30,
+      "criticalPercent": 20
+    },
+    {
+      "id": "DG3",
+      "yard": "Yard 1",
+      "towers": "A-E",
+      "capacityLiters": 500,
+      "warningPercent": 30,
+      "criticalPercent": 20
+    },
+    {
+      "id": "DG4",
+      "yard": "Yard 2",
+      "towers": "F-H",
+      "capacityLiters": 1000,
+      "warningPercent": 30,
+      "criticalPercent": 20
+    },
+    {
+      "id": "DG5",
+      "yard": "Yard 2",
+      "towers": "F-H",
+      "capacityLiters": 1000,
+      "warningPercent": 30,
+      "criticalPercent": 20
+    },
+    {
+      "id": "DG6",
+      "yard": "Yard 2",
+      "towers": "F-H",
+      "capacityLiters": 800,
+      "warningPercent": 30,
+      "criticalPercent": 20
+    }
+  ],
+  "externalTanks": [
+    {
+      "id": "EXT1",
+      "name": "External Tank - Yard 1",
+      "yard": "Yard 1",
+      "capacityLiters": 1000,
+      "currentLiters": 625,
+      "currentAsOf": "2026-07-17"
+    },
+    {
+      "id": "EXT2",
+      "name": "External Tank - Yard 2",
+      "yard": "Yard 2",
+      "capacityLiters": 1000,
+      "currentLiters": 650,
+      "currentAsOf": "2026-07-17"
+    }
+  ]
+}

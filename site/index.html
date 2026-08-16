@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#17408f">
+  <title>DG Monitoring System - Godrej Park Retreat</title>
+  <link rel="stylesheet" href="./css/dashboard.css?v=external-axis-v2?v=external-layout-2">
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand-block">
+      <div class="eyebrow">GODREJ PARK RETREAT</div>
+      <h1>DG Monitoring system</h1>
+      <div class="sync-line">
+        <span>◷</span><span id="syncTime">Data synced: —</span>
+        <span class="separator">|</span>
+        <span>◷</span><span id="dataTill">Data available till: —</span>
+      </div>
+    </div>
+    <div class="toolbar">
+      <label class="month-picker">
+        <span>Month</span>
+        <select id="monthSelect" aria-label="Dashboard month"></select>
+      </label>
+      <button id="refreshBtn" class="refresh-btn" type="button">↻ &nbsp;Refresh</button>
+    </div>
+  </header>
+
+  <main id="app" class="container">
+    <div id="status" class="status" hidden></div>
+
+    <section id="dashboard" hidden>
+      <section class="panel fuel-panel">
+        <div class="panel-title-row">
+          <div>
+            <h2><span class="signal-icon" aria-hidden="true"><i></i><i></i><i></i><i></i></span> Current Fuel Level</h2>
+          </div>
+        </div>
+        <div class="fuel-subcards">
+          <div class="fuel-subcard dg-subcard">
+            <div class="subcard-title"><span class="signal-mini" aria-hidden="true"><i></i><i></i><i></i><i></i></span>DG Fuel Level</div>
+            <div id="fuelLevelChart" class="fuel-chart"></div>
+            <div class="legend">
+              <span><i class="dot normal"></i>&gt; 30% (Normal)</span>
+              <span><i class="dot warning"></i>20% - 30% (Warning)</span>
+              <span><i class="dot critical"></i>&lt; 20% (Critical)</span>
+            </div>
+          </div>
+          <div class="fuel-subcard external-subcard">
+            <div class="external-section-header">
+              <div class="subcard-title"><span class="signal-mini" aria-hidden="true"><i></i><i></i><i></i><i></i></span>External Fuel Tanks</div>
+            </div>
+            <div id="externalTanks" class="external-grid"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="summary-grid">
+        <article class="panel summary-panel">
+          <h2><span class="title-icon blue"></span> Overview</h2>
+          <div id="overviewCards" class="overview-grid"></div>
+        </article>
+
+        <article class="panel summary-panel">
+          <h2><span class="title-icon blue"></span> Running Hours (Total)</h2>
+          <div id="runningSummary"></div>
+        </article>
+
+        <article class="panel summary-panel">
+          <h2><span class="title-icon purple"></span> Fuel Consumption (Today)</h2>
+          <div id="consumptionSummary"></div>
+        </article>
+      </section>
+
+      <section class="panel secondary-panel">
+        <div class="section-heading">
+          <div>
+            <h2>Previous vs Current Reading</h2>
+            <p id="comparisonDates" class="muted"></p>
+          </div>
+        </div>
+        <div id="comparison" class="comparison-grid"></div>
+      </section>
+
+      <section class="panel secondary-panel">
+        <div class="section-heading">
+          <div>
+            <h2>Fuel Added</h2>
+            <p>Fuel top-ups by date and DG.</p>
+          </div>
+        </div>
+        <div id="fuelAdditionsChart" class="chart chart-tall"></div>
+      </section>
+
+      <section class="panel secondary-panel">
+        <div class="section-heading">
+          <div>
+            <h2>Daily Fuel Level</h2>
+            <p>Actual readings are shown through the latest available day.</p>
+          </div>
+        </div>
+        <div id="dailyTrendChart" class="chart chart-large"></div>
+      </section>
+    </section>
+
+    <section id="emptyState" class="empty-state" hidden>
+      <h2>No synced DG data available</h2>
+      <p>The dashboard is ready, but there are no valid readings to display for the selected month.</p>
+    </section>
+  </main>
+
+  <footer class="footer">&nbsp; All times are in IST (Asia/Kolkata)</footer>
+  <script src="./js/app.js"></script>
+</body>
+</html>

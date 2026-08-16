@@ -1,0 +1,13 @@
+{
+  "notes": [
+    "Adjust this file after inspecting the actual source workbook if its headers differ.",
+    "The parser also performs normalized-header matching and recognizes DG IDs in headers."
+  ],
+  "date_candidates": ["date", "reading date", "day", "timestamp"],
+  "global_candidates": {
+    "fuel_added": ["fuel added", "diesel added", "fuel addition"],
+    "running_hours": ["running hours"],
+    "fuel_percent": ["diesel balance %", "diesel balance percent", "fuel balance %"],
+    "fuel_actual": ["diesel balance actuals", "diesel balance actual", "fuel actual", "diesel balance"]
+  }
+}
