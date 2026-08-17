@@ -247,11 +247,42 @@ function renderExternalTanks(data){
   });
   const warnLabel = defaultDgWarning2;
   const critLabel = defaultDgCritical2;
+  // compute month totals for running hours and fuel consumption + current stock
+  const running = monthRunningTotals(data, readings);
+  // total fuel consumption across all DGs for the month (computed when possible)
+  let totalConsumed = 0, totalAdded = 0, consumedComputed = false;
+  cfg.forEach(d=>{
+    const rs = readings.filter(r=>r.dg===d.id).sort((a,b)=>a.date.localeCompare(b.date));
+    const added = rs.reduce((s,r)=>s + (Number(r.fuelAdded)||0), 0);
+    totalAdded += added;
+    if(rs.length>=2){
+      const first = rs[0]; const last = rs.at(-1);
+      const consumed = (Number(first.fuelActual)||0) + added - (Number(last.fuelActual)||0);
+      if(Number.isFinite(consumed)){
+        totalConsumed += Math.max(0,consumed);
+        consumedComputed = true;
+      }
+    }
+  });
+  const fuelForDisplay = consumedComputed ? totalConsumed : totalAdded;
+  const avgLph = (running.total && fuelForDisplay) ? (fuelForDisplay / running.total) : null;
+  // current stock across DGs (latest actuals)
+  const latestReadings = latestByDG(readings);
+  const currentStock = cfg.reduce((s,d)=>s + (Number(latestReadings[d.id]?.fuelActual) || 0), 0);
+  // external tanks current liters (excess stock)
+  const externalTanks = data.config?.externalTanks || [];
+  const externalStock = externalTanks.reduce((s,t)=>s + (Number(t.currentLiters) || 0), 0);
+
   document.querySelector("#overviewCards").innerHTML=`
     <div class="overview-card"><div class="summary-icon blue">⛽</div><div><div class="overview-number">${cfg.length}</div><div class="overview-label">DG Sets</div><div class="overview-label">2 Yards</div></div></div>
+    <div class="overview-card"><div class="summary-icon yellow">📦</div><div><div class="overview-number">${fmt(currentStock)} L</div><div class="overview-label">DG stock</div></div></div>
+    <div class="overview-card"><div class="summary-icon purple">🛢️</div><div><div class="overview-number">${fmt(externalStock)} L</div><div class="overview-label">Excess stock</div></div></div>
     <div class="overview-card"><div class="summary-icon green">▰</div><div><div class="overview-number">${normal}</div><div class="overview-label">DGs &gt; ${warnLabel}%</div><div class="overview-state normal">Normal</div></div></div>
     <div class="overview-card"><div class="summary-icon yellow">!</div><div><div class="overview-number">${warning}</div><div class="overview-label">DGs ${critLabel}% - ${warnLabel}%</div><div class="overview-state warning">Warning</div></div></div>
-    <div class="overview-card"><div class="summary-icon red">!</div><div><div class="overview-number">${critical}</div><div class="overview-label">DGs &lt; ${critLabel}%</div><div class="overview-state critical">Critical</div></div></div>`;
+    <div class="overview-card"><div class="summary-icon red">!</div><div><div class="overview-number">${critical}</div><div class="overview-label">DGs &lt; ${critLabel}%</div><div class="overview-state critical">Critical</div></div></div>
+    <div class="overview-card"><div class="summary-icon blue">⏱</div><div><div class="overview-number">${fmt(running.total,2)} h</div><div class="overview-label">Total running hours</div></div></div>
+    <div class="overview-card"><div class="summary-icon purple">⛽</div><div><div class="overview-number">${fmt(fuelForDisplay)} L</div><div class="overview-label">Total fuel consumed</div></div></div>
+    <div class="overview-card"><div class="summary-icon green">⚖️</div><div><div class="overview-number">${avgLph?fmt(avgLph,2):'—'}</div><div class="overview-label">Avg L/hr</div></div></div>`;
 }
 
 function deltaHours(a,b){
@@ -482,12 +513,17 @@ function renderTrend(data,readings,month){
   if(latest && String(latest).slice(0,7) === month){ lastDay = Number(String(latest).slice(8)); }
   const x = Array.from({length:lastDay},(_,i)=>`${month}-${String(i+1).padStart(2,"0")}`);
   const ids = ["DG1","DG2","DG3","DG4","DG5","DG6"];
-
   // Detect spikes where fuelPercent rises but no fuelAdded recorded on that date.
   // Make threshold configurable via data.config.spikeThresholdPercent (percent points).
   const SPIKE_THRESHOLD = Number(data.config?.spikeThresholdPercent ?? 5);
 
-  const series = ids.map(id => {
+  // Color palette (match ECharts defaults) for per-DG series so markers can use same color
+  const PALETTE = ["#5470c6","#91cc75","#fac858","#ee6666","#73c0de","#3ba272"];
+
+  // Track coordinates already labeled to avoid overlapping labels when multiple
+  // series have identical data points (same day and value).
+  const seenCoords = new Set();
+  const series = ids.map((id, idx) => {
     const dataPoints = x.map(d => { const r = readings.find(z=>z.date===d&&z.dg===id); return r && Number.isFinite(Number(r.fuelPercent)) ? Number(r.fuelPercent) : null; });
     const markPoints = [];
     for(let i=1;i<dataPoints.length;i++){
@@ -506,19 +542,38 @@ function renderTrend(data,readings,month){
         const dateHasAnyAdded = readings.some(z => (z.date===date || z.date===prevDate) && (Number(z.fuelAdded) || 0) > 0);
         if(added === 0 && !dateHasAnyAdded){
           // annotate as possible reading error
+          const key = `${date.slice(8)}-${cur}`;
           markPoints.push({
             name: 'Possible reading error',
             // x-axis category is day-of-month (two-digit); use that for coord
             coord: [date.slice(8), cur],
             value: cur,
-            label: { formatter: 'Check', position: 'top' },
+            label: { formatter: 'Check', position: 'top', show: !seenCoords.has(key) },
             itemStyle: { color: '#e74c3c' }
           });
+          seenCoords.add(key);
         }
       }
     }
-    const seriesObj = { name: id, type: "line", smooth: true, data: dataPoints, connectNulls: false };
+    const seriesObj = { name: id, type: "line", smooth: true, data: dataPoints, connectNulls: false, itemStyle:{color: PALETTE[idx % PALETTE.length]} };
     if(markPoints.length) seriesObj.markPoint = { data: markPoints };
+    // add circular markers at every datapoint showing the DG numeric identifier (no 'DG' prefix)
+    dataPoints.forEach((val, i) => {
+      if(val==null) return;
+      seriesObj.markPoint = seriesObj.markPoint || { data: [] };
+      const key = `${x[i].slice(8)}-${val}`;
+      const showLabel = !seenCoords.has(key);
+      seriesObj.markPoint.data.push({
+        coord: [x[i].slice(8), val],
+        value: val,
+        symbol: 'circle',
+        symbolSize: 18,
+        // show only DG number (e.g. '1' for 'DG1') inside the circle
+        label: { show: showLabel, formatter: id.replace(/^DG/i, ''), color:'#fff', fontWeight:'700', position:'inside' },
+        itemStyle: { color: PALETTE[idx % PALETTE.length] }
+      });
+      if(showLabel) seenCoords.add(key);
+    });
     return seriesObj;
   });
 
@@ -527,7 +582,7 @@ function renderTrend(data,readings,month){
     legend:{top:5},
     grid:{left:55,right:25,top:45,bottom:55},
     xAxis:{type:"category",data:x.map(d=>d.slice(8)),name:"Day"},
-    yAxis:{type:"value",min:0,max:100,name:"Fuel %"},
+    yAxis:{type:"value",min:0,max:100,interval:10,name:"Fuel %"},
     series
   });
 }
@@ -569,7 +624,32 @@ function renderRunningHours(data,readings,month){
 
   const series = ids.map(id => ({ name: id, type: 'line', smooth: true, data: perDgDaily[id] }));
   // Add cumulative series and show it by default while hiding individual DG series initially
-  series.push({ name: 'Cumulative', type: 'line', smooth: true, data: cumulative, lineStyle:{width:3}, emphasis:{focus:'series'} });
+  series.push({ name: 'Cumulative', type: 'line', smooth: true, data: cumulative, lineStyle:{width:3}, emphasis:{focus:'series'}, itemStyle:{color:'#2d78e8'} });
+
+  // Add circular DG identifier markers for running hours series (at every datapoint)
+  const PALETTE = ["#5470c6","#91cc75","#fac858","#ee6666","#73c0de","#3ba272"];
+  // track seen coords to avoid overlapping labels
+  const seenCoordsRunning = new Set();
+  series.forEach((s, idx) => {
+    // skip Cumulative (last series) for individual DG badges
+    if(s.name === 'Cumulative') return;
+    const dataPoints = s.data || [];
+    dataPoints.forEach((val, i) => {
+      if(val==null) return;
+      s.markPoint = s.markPoint || { data: [] };
+      const key = `${x[i].slice(8)}-${val}`;
+      const showLabel = !seenCoordsRunning.has(key);
+      s.markPoint.data.push({
+        coord: [x[i].slice(8), val],
+        value: val,
+        symbol: 'circle',
+        symbolSize: 18,
+        label: { show: showLabel, formatter: s.name.replace(/^DG/i, ''), color:'#fff', fontWeight:'700', position:'inside' },
+        itemStyle: { color: PALETTE[idx % PALETTE.length] }
+      });
+      if(showLabel) seenCoordsRunning.add(key);
+    });
+  });
 
   // Set legend so Cumulative is selected by default
   const legendSelected = {};

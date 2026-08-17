@@ -32,6 +32,24 @@
     <div id="status" class="status" hidden></div>
 
     <section id="dashboard" hidden>
+
+      <section class="summary-grid">
+        <article class="panel summary-panel">
+          <h2><span class="title-icon blue"></span>Overview</h2>
+          <div id="overviewCards" class="overview-grid"></div>
+        </article>
+
+        <article class="panel summary-panel">
+          <h2><span class="title-icon blue"></span>Running Hours Summary</h2>
+          <div id="runningSummary"></div>
+        </article>
+
+        <article class="panel summary-panel">
+          <h2><span class="title-icon purple"></span>Fuel Consumption Summary</h2>
+          <div id="consumptionSummary"></div>
+        </article>
+      </section>
+
       <section class="panel fuel-panel">
         <div class="panel-title-row">
           <div>
@@ -53,23 +71,6 @@
             <div id="externalTanks" class="external-grid"></div>
           </div>
         </div>
-      </section>
-
-      <section class="summary-grid">
-        <article class="panel summary-panel">
-          <h2><span class="title-icon blue"></span>Overview</h2>
-          <div id="overviewCards" class="overview-grid"></div>
-        </article>
-
-        <article class="panel summary-panel">
-          <h2><span class="title-icon blue"></span>Running Hours Summary</h2>
-          <div id="runningSummary"></div>
-        </article>
-
-        <article class="panel summary-panel">
-          <h2><span class="title-icon purple"></span>Fuel Consumption Summary</h2>
-          <div id="consumptionSummary"></div>
-        </article>
       </section>
 
       <section class="panel secondary-panel">
@@ -144,7 +145,7 @@
     </section>
   </main>
 
-  <footer class="footer">&nbsp; All times are in IST (Asia/Kolkata)</footer>
+  <footer class="footer"><strong>Disclaimer:</strong> The data presented in this dashboard is based on manual entries and may be subject to human error. DG fuel readings may also vary depending on the operating condition of the DG. For example, fuel levels can fluctuate while the DG is running or immediately after it has been stopped. Therefore, the readings should be considered indicative and may not always represent the exact fuel level at a given point in time.</footer>
   <script src="./js/app.js"></script>
 </body>
 </html>
