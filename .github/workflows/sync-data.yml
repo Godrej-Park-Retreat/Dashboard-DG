@@ -3,11 +3,9 @@ name: Sync DG Data
 on:
   workflow_dispatch:
   schedule:
-    # GitHub Actions uses UTC. These cover ~09:30-12:30 IST.
-    - cron: "0 4 * * *"
-    - cron: "0 5 * * *"
-    - cron: "0 6 * * *"
-    - cron: "0 7 * * *"
+    # Run at 09:00, 10:00, 11:00 and 12:00 Asia/Kolkata time every day
+    - cron: '0 9-12 * * *'
+      timezone: 'Asia/Kolkata'
 
 permissions:
   contents: write
