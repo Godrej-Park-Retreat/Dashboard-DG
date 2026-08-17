@@ -475,11 +475,61 @@ function renderFuelAdditions(readings){
 function renderTrend(data,readings,month){
   destroyChart("trend");
   const chart=echarts.init(document.querySelector("#dailyTrendChart")); state.charts.trend=chart;
-  const days=new Date(Number(month.slice(0,4)),Number(month.slice(5,7)),0).getDate();
-  const x=Array.from({length:days},(_,i)=>`${month}-${String(i+1).padStart(2,"0")}`);
-  const ids=["DG1","DG2","DG3","DG4","DG5","DG6"];
-  const series=ids.map(id=>({name:id,type:"line",smooth:true,data:x.map(d=>{const r=readings.find(z=>z.date===d&&z.dg===id);return r&&Number.isFinite(Number(r.fuelPercent))?Number(r.fuelPercent):null}),connectNulls:false}));
-  chart.setOption({tooltip:{trigger:"axis"},legend:{top:5},grid:{left:55,right:25,top:45,bottom:55},xAxis:{type:"category",data:x.map(d=>d.slice(8)),name:"Day"},yAxis:{type:"value",min:0,max:100,name:"Fuel %"},series});
+  const daysInMonth = new Date(Number(month.slice(0,4)),Number(month.slice(5,7)),0).getDate();
+  // Limit trend to only dates for which data is available (up to latestAvailableDate)
+  const latest = latestAvailableDate(data); // may be null
+  let lastDay = daysInMonth;
+  if(latest && String(latest).slice(0,7) === month){ lastDay = Number(String(latest).slice(8)); }
+  const x = Array.from({length:lastDay},(_,i)=>`${month}-${String(i+1).padStart(2,"0")}`);
+  const ids = ["DG1","DG2","DG3","DG4","DG5","DG6"];
+
+  // Detect spikes where fuelPercent rises but no fuelAdded recorded on that date.
+  // Make threshold configurable via data.config.spikeThresholdPercent (percent points).
+  const SPIKE_THRESHOLD = Number(data.config?.spikeThresholdPercent ?? 5);
+
+  const series = ids.map(id => {
+    const dataPoints = x.map(d => { const r = readings.find(z=>z.date===d&&z.dg===id); return r && Number.isFinite(Number(r.fuelPercent)) ? Number(r.fuelPercent) : null; });
+    const markPoints = [];
+    for(let i=1;i<dataPoints.length;i++){
+      const prev = dataPoints[i-1]; const cur = dataPoints[i];
+      if(prev!=null && cur!=null && cur > prev + SPIKE_THRESHOLD){
+        // check if fuelAdded exists and is > 0 for this DG on this date
+        const date = x[i];
+        const r = readings.find(z=>z.date===date && z.dg===id) || {};
+        const added = Number(r.fuelAdded) || 0;
+        // If fuel was added on this date for any DG (possible mis-attribution in source),
+        // don't mark as reading error for this DG.
+        // Also consider fuel added on the previous date: sometimes filling happens
+        // on day N but the reading that reflects it is taken on day N+1. Suppress
+        // spike flags if fuelAdded exists on the current or previous date.
+        const prevDate = x[i-1];
+        const dateHasAnyAdded = readings.some(z => (z.date===date || z.date===prevDate) && (Number(z.fuelAdded) || 0) > 0);
+        if(added === 0 && !dateHasAnyAdded){
+          // annotate as possible reading error
+          markPoints.push({
+            name: 'Possible reading error',
+            // x-axis category is day-of-month (two-digit); use that for coord
+            coord: [date.slice(8), cur],
+            value: cur,
+            label: { formatter: 'Check', position: 'top' },
+            itemStyle: { color: '#e74c3c' }
+          });
+        }
+      }
+    }
+    const seriesObj = { name: id, type: "line", smooth: true, data: dataPoints, connectNulls: false };
+    if(markPoints.length) seriesObj.markPoint = { data: markPoints };
+    return seriesObj;
+  });
+
+  chart.setOption({
+    tooltip:{trigger:"axis"},
+    legend:{top:5},
+    grid:{left:55,right:25,top:45,bottom:55},
+    xAxis:{type:"category",data:x.map(d=>d.slice(8)),name:"Day"},
+    yAxis:{type:"value",min:0,max:100,name:"Fuel %"},
+    series
+  });
 }
 
 function render(){

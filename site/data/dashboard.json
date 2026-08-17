@@ -2130,6 +2130,7 @@
     "dgsCriticalPercent": 25,
     "externalWarningPercent": 30,
     "externalCriticalPercent": 15,
+    "spikeThresholdPercent": 5,
     "dgs": [
       {
         "id": "DG1",
