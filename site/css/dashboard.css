@@ -370,6 +370,37 @@ h2 {
         color: #101828
     }
 
+.running-hours-overview{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+}
+.running-total{
+    display:flex;
+    align-items:baseline;
+    gap:8px;
+}
+.running-total strong{
+    font-weight:800;
+    font-size:14px;
+    color:#101828;
+}
+.running-value{
+    font-weight:800;
+    font-size:16px;
+    color:#101828;
+}
+.running-breakdown{
+    display:flex;
+    gap:14px;
+    align-items:center;
+    flex-wrap:wrap;
+}
+.running-item{ }
+.running-item .running-dg{ font-weight:800; margin-right:6px; color:#101828 }
+.running-item .running-val{ color:#475467 }
+
 .secondary-panel {
     margin-top: 16px;
     padding: 20px

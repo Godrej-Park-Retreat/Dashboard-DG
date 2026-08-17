@@ -532,6 +532,98 @@ function renderTrend(data,readings,month){
   });
 }
 
+function renderRunningHours(data,readings,month){
+  destroyChart("runningHours");
+  const chart = echarts.init(document.querySelector("#dailyRunningHoursChart")); state.charts.runningHours = chart;
+
+  const daysInMonth = new Date(Number(month.slice(0,4)),Number(month.slice(5,7)),0).getDate();
+  const latest = latestAvailableDate(data);
+  let lastDay = daysInMonth;
+  if(latest && String(latest).slice(0,7) === month) lastDay = Number(String(latest).slice(8));
+  const x = Array.from({length:lastDay},(_,i)=>`${month}-${String(i+1).padStart(2,"0")}`);
+  const ids = ["DG1","DG2","DG3","DG4","DG5","DG6"];
+
+  // Compute per-DG daily running hours (difference from previous day).
+  const perDgDaily = {};
+  ids.forEach(id => {
+    perDgDaily[id] = x.map((date,idx) => {
+      if(idx===0) return null; // no previous day to diff
+      const prevDate = x[idx-1];
+      const prev = readings.find(r=>r.date===prevDate && r.dg===id);
+      const cur = readings.find(r=>r.date===date && r.dg===id);
+      if(!prev || !cur) return null;
+      const pv = Number(prev.runningHours);
+      const cv = Number(cur.runningHours);
+      if(!Number.isFinite(pv) || !Number.isFinite(cv)) return null;
+      const delta = cv - pv;
+      return delta > 0 ? delta : 0;
+    });
+  });
+
+  // cumulative across all DGs per day
+  const cumulative = x.map((date,idx) => {
+    if(idx===0) return null;
+    return ids.reduce((s,id) => s + (Number(perDgDaily[id][idx]) || 0), 0);
+  });
+
+
+  const series = ids.map(id => ({ name: id, type: 'line', smooth: true, data: perDgDaily[id] }));
+  // Add cumulative series and show it by default while hiding individual DG series initially
+  series.push({ name: 'Cumulative', type: 'line', smooth: true, data: cumulative, lineStyle:{width:3}, emphasis:{focus:'series'} });
+
+  // Set legend so Cumulative is selected by default
+  const legendSelected = {};
+  ids.forEach(id => legendSelected[id] = false);
+  legendSelected['Cumulative'] = true;
+
+  chart.setOption({
+    tooltip:{trigger:'axis'},
+    legend:{top:5,selected:legendSelected},
+    grid:{left:55,right:25,top:45,bottom:55},
+    xAxis:{type:'category',data:x.map(d=>d.slice(8)),name:'Day'},
+    yAxis:{type:'value',name:'Hours'},
+    series
+  });
+}
+
+// Render compact running hours overview (total + per-DG) into #runningHoursSummary
+function renderRunningOverview(data, readings, month){
+  const daysInMonth = new Date(Number(month.slice(0,4)),Number(month.slice(5,7)),0).getDate();
+  const latest = latestAvailableDate(data);
+  let lastDay = daysInMonth;
+  if(latest && String(latest).slice(0,7) === month) lastDay = Number(String(latest).slice(8));
+  const x = Array.from({length:lastDay},(_,i)=>`${month}-${String(i+1).padStart(2,"0")}`);
+  const ids = ["DG1","DG2","DG3","DG4","DG5","DG6"];
+
+  // Recompute per-DG daily deltas used for totals
+  const perDgDaily = {};
+  ids.forEach(id => {
+    perDgDaily[id] = x.map((date,idx) => {
+      if(idx===0) return null;
+      const prevDate = x[idx-1];
+      const prev = readings.find(r=>r.date===prevDate && r.dg===id);
+      const cur = readings.find(r=>r.date===date && r.dg===id);
+      if(!prev || !cur) return null;
+      const pv = Number(prev.runningHours);
+      const cv = Number(cur.runningHours);
+      if(!Number.isFinite(pv) || !Number.isFinite(cv)) return null;
+      const delta = cv - pv;
+      return delta > 0 ? delta : 0;
+    });
+  });
+
+  const perDgTotals = {};
+  ids.forEach(id => { perDgTotals[id] = perDgDaily[id].reduce((s,v) => s + (Number(v) || 0), 0); });
+  const totalAll = ids.reduce((s,id) => s + (perDgTotals[id]||0), 0);
+
+  const summaryEl = document.querySelector('#runningHoursSummary');
+  if(!summaryEl) return;
+  let html = `<div class="running-hours-overview"><div class="running-total"><strong>Total</strong> <span class="running-val">${totalAll.toFixed(2)} h </span></div><div class="running-breakdown">`;
+  ids.forEach(id => { html += `<div class="running-item"><span class="running-dg">${id}</span> <span class="running-val">${perDgTotals[id].toFixed(2)} h</span></div>`; });
+  html += `</div></div>`;
+  summaryEl.innerHTML = html;
+}
+
 function render(){
   const readings=readingsForMonth(state.data,state.selectedMonth);
   const has=readings.length>0;
@@ -546,6 +638,8 @@ function render(){
   renderComparison(readings);
   renderFuelAdditions(readings);
   renderTrend(state.data,readings,state.selectedMonth);
+  renderRunningOverview(state.data,readings,state.selectedMonth);
+  renderRunningHours(state.data,readings,state.selectedMonth);
 }
 
 async function init(){

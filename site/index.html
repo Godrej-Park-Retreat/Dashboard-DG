@@ -90,7 +90,7 @@
           <div class="yards">
             <div class="yard" id="yard1">
               <div class="yard-header">
-                <div class="yard-title"><span class="yard-name yard1">Yard 1</span> <small>(DG1 - DG3)</small></div>
+                <div class="yard-title"><span class="yard-name yard1">Yard 1</span> <small>(DG1 ~ DG3)</small></div>
                 <div class="yard-meta" id="yard1Meta"></div>
               </div>
               <div class="dg-list" id="yard1List"></div>
@@ -98,7 +98,7 @@
 
             <div class="yard" id="yard2">
               <div class="yard-header">
-                <div class="yard-title"><span class="yard-name yard2">Yard 2</span> <small>(DG4 - DG6)</small></div>
+                <div class="yard-title"><span class="yard-name yard2">Yard 2</span> <small>(DG4 ~ DG6)</small></div>
                 <div class="yard-meta" id="yard2Meta"></div>
               </div>
               <div class="dg-list" id="yard2List"></div>
@@ -125,6 +125,16 @@
           </div>
         </div>
         <div id="dailyTrendChart" class="chart chart-large"></div>
+      </section>
+      <section class="panel secondary-panel">
+        <div class="section-heading">
+          <div>
+            <h2>Daily Running Hours</h2>
+            <p>Daily running hours per DG and cumulative running time across all DGs. Cumulative is shown by default; toggle series via the legend.</p>
+            <p id="runningHoursSummary" class="running-hours-summary"></p>
+          </div>
+        </div>
+        <div id="dailyRunningHoursChart" class="chart chart-large"></div>
       </section>
     </section>
 
