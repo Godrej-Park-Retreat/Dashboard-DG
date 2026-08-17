@@ -274,12 +274,12 @@ function renderExternalTanks(data){
   const externalStock = externalTanks.reduce((s,t)=>s + (Number(t.currentLiters) || 0), 0);
 
   document.querySelector("#overviewCards").innerHTML=`
-    <div class="overview-card"><div class="summary-icon blue">⛽</div><div><div class="overview-number">${cfg.length}</div><div class="overview-label">DG Sets</div><div class="overview-label">2 Yards</div></div></div>
+    <div class="overview-card"><div class="summary-icon blue">⛽</div><div><div class="overview-number">${cfg.length}</div><div class="overview-label">DG Sets in 2 Yards</div></div></div>
     <div class="overview-card"><div class="summary-icon yellow">📦</div><div><div class="overview-number">${fmt(currentStock)} L</div><div class="overview-label">DG stock</div></div></div>
     <div class="overview-card"><div class="summary-icon purple">🛢️</div><div><div class="overview-number">${fmt(externalStock)} L</div><div class="overview-label">Excess stock</div></div></div>
-    <div class="overview-card"><div class="summary-icon green">▰</div><div><div class="overview-number">${normal}</div><div class="overview-label">DGs &gt; ${warnLabel}%</div><div class="overview-state normal">Normal</div></div></div>
-    <div class="overview-card"><div class="summary-icon yellow">!</div><div><div class="overview-number">${warning}</div><div class="overview-label">DGs ${critLabel}% - ${warnLabel}%</div><div class="overview-state warning">Warning</div></div></div>
-    <div class="overview-card"><div class="summary-icon red">!</div><div><div class="overview-number">${critical}</div><div class="overview-label">DGs &lt; ${critLabel}%</div><div class="overview-state critical">Critical</div></div></div>
+    <div class="overview-card"><div class="summary-icon green">▰</div><div><div class="overview-number">${normal} <span class="overview-state normal">(Normal)</span></div><div class="overview-label">DGs &gt; ${warnLabel}%</div></div></div>
+    <div class="overview-card"><div class="summary-icon yellow">!</div><div><div class="overview-number">${warning} <span class="overview-state warning">(Warning)</span></div><div class="overview-label">DGs ${critLabel}% - ${warnLabel}%</div></div></div>
+    <div class="overview-card"><div class="summary-icon red">!</div><div><div class="overview-number">${critical} <span class="overview-state critical">(Critical)</span></div><div class="overview-label">DGs &lt; ${critLabel}%</div></div></div>
     <div class="overview-card"><div class="summary-icon blue">⏱</div><div><div class="overview-number">${fmt(running.total,2)} h</div><div class="overview-label">Total running hours</div></div></div>
     <div class="overview-card"><div class="summary-icon purple">⛽</div><div><div class="overview-number">${fmt(fuelForDisplay)} L</div><div class="overview-label">Total fuel consumed</div></div></div>
     <div class="overview-card"><div class="summary-icon green">⚖️</div><div><div class="overview-number">${avgLph?fmt(avgLph,2):'—'}</div><div class="overview-label">Avg L/hr</div></div></div>`;
