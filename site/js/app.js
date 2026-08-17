@@ -447,9 +447,29 @@ function renderComparison(readings){
 function renderFuelAdditions(readings){
   destroyChart("additions");
   const chart=echarts.init(document.querySelector("#fuelAdditionsChart")); state.charts.additions=chart;
-  const dates=[...new Set(readings.map(r=>r.date))].sort(); const ids=["DG1","DG2","DG3","DG4","DG5","DG6"];
+  const allDates=[...new Set(readings.map(r=>r.date))].sort();
+  // only keep dates where at least one DG had a fuelAdded > 0
+  const dates = allDates.filter(date => readings.some(r => r.date===date && (Number(r.fuelAdded) || 0) > 0));
+  const ids=["DG1","DG2","DG3","DG4","DG5","DG6"];
   const series=ids.map(id=>({name:id,type:"bar",stack:"total",data:dates.map(date=>Number(readings.find(r=>r.date===date&&r.dg===id)?.fuelAdded)||0)}));
-  chart.setOption({tooltip:{trigger:"axis"},legend:{top:5},grid:{left:55,right:25,top:45,bottom:70},xAxis:{type:"category",data:dates.map(formatDate),axisLabel:{rotate:45}},yAxis:{type:"value",name:"Litres"},series});
+  chart.setOption({
+    tooltip:{trigger:"axis"},
+    legend:{top:5},
+    // increased bottom spacing to fit taller/higher line-height labels
+    grid:{left:55,right:25,top:45,bottom:90},
+    xAxis:{
+      type:"category",
+      data:dates.map(formatDate),
+      axisLabel:{
+        rotate:0,
+        interval:0,
+        // increase line height so multi-line labels have more spacing
+        lineHeight:24
+      }
+    },
+    yAxis:{type:"value",name:"Litres"},
+    series
+  });
 }
 
 function renderTrend(data,readings,month){
