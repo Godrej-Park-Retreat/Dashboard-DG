@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-22T05:51:50+00:00",
+  "generatedAt": "2026-08-22T07:08:53+00:00",
   "source": {
     "type": "public-google-sheet",
     "sheetId": "1ewUi24xgWh2FVODrjkP7OPzrvfHW7DrM",
@@ -2506,6 +2506,54 @@
       "runningHours": 212.41,
       "fuelPercent": 35.0,
       "fuelActual": 280.0,
+      "fuelAdded": 0
+    },
+    {
+      "date": "2026-08-22",
+      "dg": "DG1",
+      "runningHours": 217.8,
+      "fuelPercent": 30.0,
+      "fuelActual": 300.0,
+      "fuelAdded": 0
+    },
+    {
+      "date": "2026-08-22",
+      "dg": "DG2",
+      "runningHours": 182.42,
+      "fuelPercent": 35.0,
+      "fuelActual": 350.0,
+      "fuelAdded": 0
+    },
+    {
+      "date": "2026-08-22",
+      "dg": "DG3",
+      "runningHours": 218.41,
+      "fuelPercent": 80.0,
+      "fuelActual": 400.0,
+      "fuelAdded": 0
+    },
+    {
+      "date": "2026-08-22",
+      "dg": "DG4",
+      "runningHours": 152.51,
+      "fuelPercent": 35.0,
+      "fuelActual": 350.0,
+      "fuelAdded": 0
+    },
+    {
+      "date": "2026-08-22",
+      "dg": "DG5",
+      "runningHours": 166.35,
+      "fuelPercent": 40.0,
+      "fuelActual": 400.0,
+      "fuelAdded": 0
+    },
+    {
+      "date": "2026-08-22",
+      "dg": "DG6",
+      "runningHours": 212.47,
+      "fuelPercent": 40.0,
+      "fuelActual": 320.0,
       "fuelAdded": 0
     }
   ],
