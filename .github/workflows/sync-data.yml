@@ -16,6 +16,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       - name: Setup Python
         uses: actions/setup-python@v7
@@ -31,10 +33,19 @@ jobs:
         run: python scripts/sync_sheet.py
 
       - name: Commit updated data
+        env:
+          REPO_PAT: ${{ secrets.REPO_PAT }}
         run: |
+          if [ -z "$REPO_PAT" ]; then
+            echo "ERROR: REPO_PAT secret is not configured. Pushes from this workflow will not trigger deployments."
+            echo "Please add a repository secret named REPO_PAT with a personal access token (repo scope)."
+            exit 1
+          fi
           git config user.name "DG Dashboard Bot"
           git config user.email "actions@github.com"
           git add site/data/dashboard.json
-          git diff --cached --quiet && exit 0
+          git diff --cached --quiet && echo "No changes to commit" && exit 0
           git commit -m "chore: sync DG data"
-          git push
+          # configure origin to use PAT for pushing so the push behaves like a real user
+          git remote set-url origin https://x-access-token:${REPO_PAT}@github.com/${{ github.repository }}
+          git push origin HEAD:master

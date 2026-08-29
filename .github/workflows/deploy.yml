@@ -4,9 +4,6 @@ on:
   push:
     # Publish pages on every checkin to master branch
     branches: ["master"]
-    paths:
-      - "site/**"
-      - ".github/workflows/deploy.yml"
   workflow_dispatch:
 
 permissions:

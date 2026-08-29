@@ -219,6 +219,23 @@ def main():
         "externalTankReadings":[],
         "config":CONFIG
     }
+    # If the only change between the existing file and the newly generated
+    # data is the generatedAt timestamp, avoid writing the file so downstream
+    # workflows (deploy) are not triggered unnecessarily.
+    if OUT.exists():
+        try:
+            old = json.loads(OUT.read_text(encoding="utf-8"))
+            new_copy = dict(result)
+            old_copy = dict(old)
+            new_copy.pop("generatedAt", None)
+            old_copy.pop("generatedAt", None)
+            if old_copy == new_copy:
+                print(f"No meaningful data change (only generatedAt). Skipping write to {OUT}.")
+                return
+        except Exception:
+            # If any error occurs while reading/parsing existing file, fall back to writing
+            pass
+
     OUT.write_text(json.dumps(result,indent=2,ensure_ascii=False),encoding="utf-8")
     print(f"Total: wrote {len(readings)} DG readings to {OUT}")
     if readings:
