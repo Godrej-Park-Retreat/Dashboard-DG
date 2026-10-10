@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-08T10:49:13+00:00",
+  "generatedAt": "2026-10-10T10:02:44+00:00",
   "source": {
     "type": "public-google-sheet",
     "sheetId": "1ewUi24xgWh2FVODrjkP7OPzrvfHW7DrM",
@@ -4811,6 +4811,102 @@
       "runningHours": 269.49,
       "fuelPercent": 60.0,
       "fuelActual": 600.0,
+      "fuelAdded": 0
+    },
+    {
+      "date": "2026-10-09",
+      "dg": "DG1",
+      "runningHours": 266.32,
+      "fuelPercent": 35.0,
+      "fuelActual": 350.0,
+      "fuelAdded": 0
+    },
+    {
+      "date": "2026-10-09",
+      "dg": "DG2",
+      "runningHours": 190.25,
+      "fuelPercent": 85.0,
+      "fuelActual": 850.0,
+      "fuelAdded": 0
+    },
+    {
+      "date": "2026-10-09",
+      "dg": "DG3",
+      "runningHours": 260.8,
+      "fuelPercent": 85.0,
+      "fuelActual": 850.0,
+      "fuelAdded": 0
+    },
+    {
+      "date": "2026-10-09",
+      "dg": "DG4",
+      "runningHours": 152.51,
+      "fuelPercent": 65.0,
+      "fuelActual": 650.0,
+      "fuelAdded": 0
+    },
+    {
+      "date": "2026-10-09",
+      "dg": "DG5",
+      "runningHours": 167.4,
+      "fuelPercent": 40.0,
+      "fuelActual": 400.0,
+      "fuelAdded": 0
+    },
+    {
+      "date": "2026-10-09",
+      "dg": "DG6",
+      "runningHours": 269.49,
+      "fuelPercent": 60.0,
+      "fuelActual": 600.0,
+      "fuelAdded": 0
+    },
+    {
+      "date": "2026-10-10",
+      "dg": "DG1",
+      "runningHours": 269.21,
+      "fuelPercent": 30.0,
+      "fuelActual": 300.0,
+      "fuelAdded": 0
+    },
+    {
+      "date": "2026-10-10",
+      "dg": "DG2",
+      "runningHours": 190.25,
+      "fuelPercent": 85.0,
+      "fuelActual": 850.0,
+      "fuelAdded": 0
+    },
+    {
+      "date": "2026-10-10",
+      "dg": "DG3",
+      "runningHours": 262.55,
+      "fuelPercent": 60.0,
+      "fuelActual": 600.0,
+      "fuelAdded": 0
+    },
+    {
+      "date": "2026-10-10",
+      "dg": "DG4",
+      "runningHours": 152.51,
+      "fuelPercent": 65.0,
+      "fuelActual": 650.0,
+      "fuelAdded": 0
+    },
+    {
+      "date": "2026-10-10",
+      "dg": "DG5",
+      "runningHours": 167.4,
+      "fuelPercent": 40.0,
+      "fuelActual": 400.0,
+      "fuelAdded": 0
+    },
+    {
+      "date": "2026-10-10",
+      "dg": "DG6",
+      "runningHours": 272.38,
+      "fuelPercent": 50.0,
+      "fuelActual": 500.0,
       "fuelAdded": 0
     }
   ],
