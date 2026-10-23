@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-22T08:48:46+00:00",
+  "generatedAt": "2026-10-23T08:44:16+00:00",
   "source": {
     "type": "public-google-sheet",
     "sheetId": "1ewUi24xgWh2FVODrjkP7OPzrvfHW7DrM",
@@ -5482,7 +5482,7 @@
       "dg": "DG6",
       "runningHours": 306.29,
       "fuelPercent": 20.0,
-      "fuelActual": null,
+      "fuelActual": 200.0,
       "fuelAdded": 0
     }
   ],
